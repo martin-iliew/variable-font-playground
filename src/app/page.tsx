@@ -90,7 +90,7 @@ export default function VariableFontPlayground() {
 
       setMetadata({
         name: file.name,
-        version: "1.0",
+        version: "2.0",
         designer: "Unknown",
         axes: detectedAxes,
         fileSize: file.size,
