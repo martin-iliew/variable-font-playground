@@ -106,9 +106,9 @@ export default function VariableFontPlayground() {
   const detectVariableAxes = (font: FontFace): VariableAxis[] => {
     const possibleAxes: VariableAxis[] = [
       { tag: "wght", name: "Weight", min: 100, max: 900, default: 400 },
-      { tag: "wdth", name: "Width", min: 75, max: 125, default: 100 },
-      { tag: "slnt", name: "Slant", min: -15, max: 0, default: 0 },
-      { tag: "opsz", name: "Optical Size", min: 8, max: 144, default: 14 },
+      { tag: "wdth", name: "Width", min: 50, max: 200, default: 100 },
+      { tag: "slnt", name: "Slant", min: 0, max: 12, default: 0 },
+      { tag: "opsz", name: "Optical Size", min: 8, max: 72, default: 14 },
       { tag: "ital", name: "Italic", min: 0, max: 1, default: 0 },
     ];
 
@@ -290,7 +290,7 @@ export default function VariableFontPlayground() {
               }}
             />
           </div>
-          <div className="flex gap-2 mt-4">
+          <div className="flex flex-col gap-2 mt-4">
             {fontFile && (
               <p className="text-sm text-muted-foreground">
                 Selected:{" "}
