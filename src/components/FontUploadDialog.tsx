@@ -19,6 +19,13 @@ interface VariableAxis {
   max: number;
   default: number;
 }
+interface FontMetadata {
+  name: string;
+  version?: string;
+  designer?: string;
+  fileSize: number;
+  axes: VariableAxis[];
+}
 
 interface Props {
   open: boolean;
@@ -28,13 +35,7 @@ interface Props {
     file: File;
     fontFamily: string;
     axes: VariableAxis[];
-    metadata: {
-      name: string;
-      version: string;
-      designer: string;
-      fileSize: number;
-      axes: VariableAxis[];
-    };
+    metadata: FontMetadata;
   }) => void;
 }
 
@@ -63,7 +64,7 @@ export function FontUploadDialog({ open, onOpenChange, onFontLoaded }: Props) {
         form.append("file", file);
 
         const res = await fetch("/api/axes", { method: "POST", body: form });
-        const { axes } = await res.json();
+        const { axes, metadata } = await res.json();
 
         if (!axes || axes.length === 0) {
           handleInvalidFont();
@@ -71,22 +72,24 @@ export function FontUploadDialog({ open, onOpenChange, onFontLoaded }: Props) {
         }
 
         const buffer = await file.arrayBuffer();
-        const fontName = `UploadedFont-${Date.now()}`;
+        const fontName = metadata?.name;
         const fontFace = new FontFace(fontName, buffer);
         await fontFace.load();
         document.fonts.add(fontFace);
+
+        const finalMetadata: FontMetadata = {
+          name: metadata?.name || file.name.replace(/\.[^/.]+$/, ""),
+          version: metadata?.version || undefined,
+          designer: metadata?.designer || undefined,
+          fileSize: file.size,
+          axes,
+        };
 
         onFontLoaded({
           file,
           fontFamily: fontName,
           axes,
-          metadata: {
-            name: file.name,
-            version: "Unknown",
-            designer: "Unknown",
-            fileSize: file.size,
-            axes,
-          },
+          metadata: finalMetadata,
         });
 
         onOpenChange(false);
@@ -108,7 +111,6 @@ export function FontUploadDialog({ open, onOpenChange, onFontLoaded }: Props) {
 
   return (
     <>
-      {/* Main Upload Dialog */}
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-xl rounded-[16px] border border-border bg-card p-7">
           <DialogHeader>
@@ -168,7 +170,6 @@ export function FontUploadDialog({ open, onOpenChange, onFontLoaded }: Props) {
         </DialogContent>
       </Dialog>
 
-      {/* Invalid Font Dialog */}
       <Dialog open={invalidDialogOpen} onOpenChange={setInvalidDialogOpen}>
         <DialogContent className="rounded-[16px] border border-border bg-card">
           <DialogHeader>

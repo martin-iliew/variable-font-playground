@@ -42,6 +42,7 @@ export function useVariableFontPlayground() {
     axes: VariableAxis[];
     metadata: FontMetadata;
   }) => {
+    console.log(data);
     setFontFile(data.file);
     setFontFamily(data.fontFamily);
     setAxes(data.axes);

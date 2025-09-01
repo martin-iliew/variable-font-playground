@@ -3,11 +3,9 @@
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { Textarea } from "@/components/ui/textarea";
 import { ModeToggle } from "@/components/ui/mode-toggle";
 import { Badge } from "@/components/ui/badge";
 
@@ -23,18 +21,7 @@ const SAMPLE_TEXTS = {
     "Variable fonts are an evolution of the OpenType font specification that allow a single font file to behave like multiple fonts.",
 } as const;
 
-const VIEW_MODES = [
-  "Plain",
-  "Waterfall",
-  "Styles",
-  "Glyphs",
-  "Present",
-] as const;
-type ViewMode = (typeof VIEW_MODES)[number];
-
 export default function VariableFontPlayground() {
-  const [viewMode, setViewMode] = React.useState<ViewMode>("Plain");
-
   const {
     fontFile,
     fontLoaded,
@@ -97,8 +84,33 @@ export default function VariableFontPlayground() {
                 </p>
                 {metadata?.version && (
                   <p className="text-xs text-muted-foreground">
-                    v{metadata.version}
+                    {metadata.version}
                   </p>
+                )}
+                {metadata && (
+                  <div className="border-t border-border px-4 py-3 text-xs">
+                    {fontFile && (
+                      <p className="truncate">
+                        <span className="text-muted-foreground">File:</span>{" "}
+                        <span className="font-medium">{fontFile.name}</span>
+                      </p>
+                    )}
+
+                    {axes.length > 0 && (
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        <span className="text-muted-foreground">Axes:</span>
+                        {axes.map((a) => (
+                          <Badge
+                            key={a.tag}
+                            variant="outline"
+                            className="px-1 py-0 text-[10px]"
+                          >
+                            {a.tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
 
@@ -232,48 +244,21 @@ export default function VariableFontPlayground() {
             </div>
           </div>
 
-          {metadata && (
-            <div className="border-t border-border px-4 py-3 text-xs">
-              {fontFile && (
-                <p className="truncate">
-                  <span className="text-muted-foreground">File:</span>{" "}
-                  <span className="font-medium">{fontFile.name}</span>
-                </p>
-              )}
-
-              {axes.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-1">
-                  <span className="text-muted-foreground">Axes:</span>
-                  {axes.map((a) => (
-                    <Badge
-                      key={a.tag}
-                      variant="outline"
-                      className="px-1 py-0 text-[10px]"
-                    >
-                      {a.tag}
-                    </Badge>
-                  ))}
-                </div>
-              )}
-
-              <div className="mt-3 flex items-center justify-between gap-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-8 flex-1 rounded-[10px] text-xs"
-                  onClick={handleCopyCss}
-                >
-                  Copy CSS
-                </Button>
-              </div>
-            </div>
-          )}
+          <div className="mt-3 flex items-center justify-between gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-8 flex-1 rounded-[10px] text-xs"
+              onClick={handleCopyCss}
+            >
+              Copy CSS
+            </Button>
+          </div>
         </div>
       </aside>
 
       {/* RIGHT MAIN AREA */}
       <main className="flex flex-1 flex-col">
-        {/* Top app bar */}
         <header className="flex items-center justify-between border-b border-border px-6 py-4">
           <div>
             <h1 className="text-lg font-semibold tracking-tight">
@@ -286,7 +271,6 @@ export default function VariableFontPlayground() {
           <ModeToggle />
         </header>
 
-        {/* Top info strip */}
         <div className="border-b border-border px-6 py-2 text-xs text-muted-foreground flex items-center justify-between gap-2">
           <div className="truncate">
             {fontFamily ? (
@@ -301,44 +285,22 @@ export default function VariableFontPlayground() {
               <span>No font loaded</span>
             )}
           </div>
-          <div className="hidden md:flex items-center gap-3">
-            <span className="text-[10px] uppercase tracking-[0.12em]">
-              View
-            </span>
-            {VIEW_MODES.map((mode) => (
-              <button
-                key={mode}
-                type="button"
-                onClick={() => setViewMode(mode)}
-                className={`rounded-full px-3 py-1 text-[11px] ${
-                  viewMode === mode
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-muted"
-                }`}
-              >
-                {mode}
-              </button>
-            ))}
-          </div>
         </div>
 
-        {/* Preview area */}
-        <section className="flex-1 overflow-auto bg-muted/30">
-          <div className="mx-auto flex max-w-[1100px] flex-col px-6 py-8">
+        <section className="flex-1 bg-muted/30">
+          <div className="mx-auto h-full w-full">
             {fontLoaded ? (
-              <Card className="min-h-[60vh] border-none bg-background shadow-none">
-                <Textarea
-                  className="h-full min-h-[60vh] w-full resize-none border-none bg-transparent p-0 text-left text-4xl leading-tight outline-none"
-                  style={{
-                    fontFamily,
-                    fontSize: `${fontSize}px`,
-                    fontVariationSettings,
-                    lineHeight: 1.4,
-                  }}
-                  value={previewText}
-                  onChange={(e) => setPreviewText(e.target.value)}
-                />
-              </Card>
+              <textarea
+                className="h-full w-full resize-none border-none text-left leading-tight outline-none p-4"
+                style={{
+                  fontFamily,
+                  fontSize: `${fontSize}px`,
+                  fontVariationSettings,
+                  lineHeight: 1.4,
+                }}
+                value={previewText}
+                onChange={(e) => setPreviewText(e.target.value)}
+              />
             ) : (
               <div className="flex h-full min-h-[60vh] items-center justify-center text-sm text-muted-foreground">
                 Upload a variable font on the left to start.
