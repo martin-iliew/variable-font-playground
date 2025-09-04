@@ -9,7 +9,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Upload } from "lucide-react";
 
 interface VariableAxis {
@@ -19,6 +18,7 @@ interface VariableAxis {
   max: number;
   default: number;
 }
+
 interface FontMetadata {
   name: string;
   version?: string;
@@ -72,7 +72,11 @@ export function FontUploadDialog({ open, onOpenChange, onFontLoaded }: Props) {
         }
 
         const buffer = await file.arrayBuffer();
-        const fontName = metadata?.name;
+        const fontName =
+          metadata?.name ||
+          file.name.replace(/\.[^/.]+$/, "") ||
+          "UploadedFont";
+
         const fontFace = new FontFace(fontName, buffer);
         await fontFace.load();
         document.fonts.add(fontFace);
@@ -98,7 +102,7 @@ export function FontUploadDialog({ open, onOpenChange, onFontLoaded }: Props) {
         handleInvalidFont();
       }
     },
-    [onFontLoaded, onOpenChange]
+    [onFontLoaded, onOpenChange],
   );
 
   const handleDrop = (e: React.DragEvent) => {
@@ -112,24 +116,18 @@ export function FontUploadDialog({ open, onOpenChange, onFontLoaded }: Props) {
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-xl rounded-[16px] border border-border bg-card p-7">
+        <DialogContent className="border-border bg-card max-w-xl rounded-[16px] border">
           <DialogHeader>
             <DialogTitle>Upload a Variable Font</DialogTitle>
             <DialogDescription>Supported: .ttf, .otf</DialogDescription>
           </DialogHeader>
 
-          <Label className="text-[13px] uppercase text-muted-foreground mt-3">
-            Upload a variable font
-          </Label>
-
           <div
-            className={`relative flex min-h-[180px] flex-col items-center justify-center
-              mt-3 rounded-[12px] border-2 border-dashed cursor-pointer transition-all
-              ${
-                isDragging
-                  ? "border-foreground bg-muted/30"
-                  : "border-border bg-muted/10"
-              }`}
+            className={`relative mt-3 flex min-h-[180px] cursor-pointer flex-col items-center justify-center rounded-[12px] border-2 border-dashed transition-all ${
+              isDragging
+                ? "border-foreground bg-muted/30"
+                : "border-border bg-muted/10"
+            }`}
             onDragOver={(e) => {
               e.preventDefault();
               setIsDragging(true);
@@ -141,14 +139,12 @@ export function FontUploadDialog({ open, onOpenChange, onFontLoaded }: Props) {
             onDrop={handleDrop}
             onClick={() => document.getElementById("upload-input")?.click()}
           >
-            <Upload className="mb-4 h-8 w-8 text-muted-foreground" />
+            <Upload className="text-muted-foreground mb-4 h-8 w-8" />
             <p className="text-muted-foreground mb-2">
               Drag & drop, or click to choose
             </p>
 
-            <Button variant="outline" className="rounded-[10px]">
-              Choose File
-            </Button>
+            <Button variant="outline">Choose File</Button>
 
             <input
               id="upload-input"
@@ -163,7 +159,7 @@ export function FontUploadDialog({ open, onOpenChange, onFontLoaded }: Props) {
           </div>
 
           {selectedFile && (
-            <p className="mt-3 text-sm text-muted-foreground break-all">
+            <p className="text-muted-foreground mt-3 text-sm break-all">
               Selected: <span className="font-medium">{selectedFile.name}</span>
             </p>
           )}
@@ -171,7 +167,7 @@ export function FontUploadDialog({ open, onOpenChange, onFontLoaded }: Props) {
       </Dialog>
 
       <Dialog open={invalidDialogOpen} onOpenChange={setInvalidDialogOpen}>
-        <DialogContent className="rounded-[16px] border border-border bg-card">
+        <DialogContent className="border-border bg-card rounded-[16px] border">
           <DialogHeader>
             <DialogTitle>Not a Variable Font</DialogTitle>
             <DialogDescription>

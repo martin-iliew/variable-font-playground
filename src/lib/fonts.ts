@@ -120,7 +120,7 @@ export function parseAxes(buffer: ArrayBuffer): AxisResult[] {
         min: axis.minValue,
         max: axis.maxValue,
         default: axis.defaultValue,
-      })
+      }),
     );
   } catch {
     return [];
@@ -175,7 +175,7 @@ export function parseGsubLanguages(buffer: Buffer): Record<string, string[]> {
 
 export function buildScriptLanguageMap(
   supportedScripts: string[],
-  gsubLanguages: Record<string, string[]>
+  gsubLanguages: Record<string, string[]>,
 ) {
   return supportedScripts.map((scriptTag) => ({
     script: scriptName(scriptTag),
@@ -188,7 +188,7 @@ export function buildScriptLanguageMap(
 }
 
 export function getNameEntry(
-  entry: NameRecord | undefined
+  entry: NameRecord | undefined,
 ): string | undefined {
   if (!entry) return undefined;
 
@@ -200,10 +200,18 @@ export function getNameEntry(
   return first as string | undefined;
 }
 
+function extractCleanVersion(raw?: string): string | undefined {
+  if (!raw) return undefined;
+
+  const match = raw.match(/(\d+(\.\d+)+)/);
+
+  return match ? match[1] : raw;
+}
+
 export function extractFontMetadata(
   arrayBuffer: ArrayBuffer,
   file: File,
-  axes: AxisResult[]
+  axes: AxisResult[],
 ) {
   try {
     const font = opentype.parse(arrayBuffer);
@@ -213,7 +221,9 @@ export function extractFontMetadata(
       getNameEntry(names.fullName as NameRecord) ||
       file.name.replace(/\.[^/.]+$/, "");
 
-    const version = getNameEntry(names.version as NameRecord);
+    const rawVersion = getNameEntry(names.version as NameRecord);
+    const version = extractCleanVersion(rawVersion);
+
     const designer = getNameEntry(names.designer as NameRecord);
 
     return {

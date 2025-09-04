@@ -7,10 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { ModeToggle } from "@/components/ui/mode-toggle";
-import { Badge } from "@/components/ui/badge";
+import { FontDetailsDropdown } from "@/components/FontDetailsDropdown";
 
 import { FontUploadDialog } from "@/components/FontUploadDialog";
 import { useVariableFontPlayground } from "@/hooks/useFontPlaygroundController";
+import { Upload } from "lucide-react";
 
 const SAMPLE_TEXTS = {
   title: "ABCDEFGHIJKLMN\nOPQRSTUVWXYZ\n0123456789",
@@ -23,7 +24,6 @@ const SAMPLE_TEXTS = {
 
 export default function VariableFontPlayground() {
   const {
-    fontFile,
     fontLoaded,
     fontFamily,
     fontSize,
@@ -70,57 +70,38 @@ export default function VariableFontPlayground() {
   }, [fontFamily, fontSize, fontVariationSettings]);
 
   return (
-    <div className="flex min-h-screen flex-col bg-background md:flex-row">
-      <aside className="border-b border-border bg-card/60 backdrop-blur md:w-[320px] md:border-b-0 md:border-r">
+    <div className="bg-background flex min-h-screen flex-col md:flex-row">
+      <aside className="border-border bg-card/60 border-b backdrop-blur md:w-[320px] md:border-r md:border-b-0">
         <div className="flex h-full flex-col">
-          <div className="border-b border-border px-4 py-4">
-            <div className="flex items-center justify-between gap-2">
-              <div>
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-[0.08em]">
-                  Font
-                </p>
-                <p className="mt-1 truncate text-sm font-semibold">
-                  {metadata?.name ?? "No font loaded"}
-                </p>
+          <div className="border-border h-19 border-b px-4 py-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <FontDetailsDropdown
+                  trigger={
+                    <button
+                      type="button"
+                      className="block w-full text-left text-sm font-bold hover:opacity-80"
+                    >
+                      {metadata?.name ?? "No font loaded"}
+                    </button>
+                  }
+                  metadata={metadata}
+                  fileName={metadata?.name ?? null}
+                />
+
                 {metadata?.version && (
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-muted-foreground text-xs">
                     {metadata.version}
                   </p>
-                )}
-                {metadata && (
-                  <div className="border-t border-border px-4 py-3 text-xs">
-                    {fontFile && (
-                      <p className="truncate">
-                        <span className="text-muted-foreground">File:</span>{" "}
-                        <span className="font-medium">{fontFile.name}</span>
-                      </p>
-                    )}
-
-                    {axes.length > 0 && (
-                      <div className="mt-2 flex flex-wrap gap-1">
-                        <span className="text-muted-foreground">Axes:</span>
-                        {axes.map((a) => (
-                          <Badge
-                            key={a.tag}
-                            variant="outline"
-                            className="px-1 py-0 text-[10px]"
-                          >
-                            {a.tag}
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
-                  </div>
                 )}
               </div>
 
               <Button
-                variant="outline"
-                size="sm"
-                className="rounded-[10px]"
+                variant="ghost"
+                size="icon"
                 onClick={() => setShowUploadModal(true)}
               >
-                Upload
+                <Upload className="text-muted-foreground" />
               </Button>
             </div>
 
@@ -131,8 +112,8 @@ export default function VariableFontPlayground() {
             />
           </div>
 
-          <div className="border-b border-border px-4 py-4">
-            <Label className="text-[11px] font-medium uppercase text-muted-foreground tracking-[0.12em]">
+          <div className="border-border border-b px-4 py-4">
+            <Label className="text-muted-foreground text-sm font-medium">
               Sample text
             </Label>
             <div className="mt-3 flex flex-wrap gap-2">
@@ -171,9 +152,8 @@ export default function VariableFontPlayground() {
             </div>
           </div>
 
-          {/* Font size */}
-          <div className="border-b border-border px-4 py-4">
-            <Label className="text-[11px] font-medium uppercase text-muted-foreground tracking-[0.12em]">
+          <div className="border-border border-b px-4 py-4">
+            <Label className="text-muted-foreground text-sm font-medium">
               Size
             </Label>
 
@@ -191,7 +171,7 @@ export default function VariableFontPlayground() {
               />
               <Input
                 type="number"
-                className="w-20 rounded-[10px] h-8"
+                className="h-8 w-20 rounded-[10px]"
                 value={fontSizeInput}
                 onChange={(e) => handleFontSizeInputChange(e.target.value)}
                 onBlur={handleFontSizeInputBlur}
@@ -199,16 +179,20 @@ export default function VariableFontPlayground() {
             </div>
           </div>
 
-          {/* Variable axes */}
-          <div className="flex-1 px-4 py-4">
-            <Label className="text-[11px] font-medium uppercase text-muted-foreground tracking-[0.12em]">
-              Variable axes
-            </Label>
+          <div className="mb-3 flex-1 px-4 py-4">
+            <div className="flex justify-between">
+              <Label className="text-muted-foreground text-sm font-medium">
+                Variable axes
+              </Label>
+              <Button variant="outline" size="sm" className="shrink-0">
+                Reset
+              </Button>
+            </div>
 
-            <div className="mt-3 max-h-full space-y-4 overflow-y-auto pr-1">
+            <div className="my-3 max-h-full space-y-4 overflow-y-auto">
               {axes.map((axis) => (
-                <div key={axis.tag} className="space-y-1">
-                  <div className="flex items-center justify-between text-[11px]">
+                <div key={axis.tag} className="mb-2">
+                  <div className="flex items-center justify-between text-xs">
                     <span className="font-mono font-semibold uppercase">
                       {axis.tag}
                     </span>
@@ -236,7 +220,7 @@ export default function VariableFontPlayground() {
                       min={axis.min}
                       max={axis.max}
                       step={axis.tag === "ital" ? 1 : 0.1}
-                      className="w-20 rounded-[10px] h-8"
+                      className="h-8 w-20 rounded-[10px]"
                     />
                   </div>
                 </div>
@@ -244,7 +228,7 @@ export default function VariableFontPlayground() {
             </div>
           </div>
 
-          <div className="mt-3 flex items-center justify-between gap-2">
+          <div className="mt-3 flex items-center justify-between gap-2 px-4 pb-4">
             <Button
               size="sm"
               variant="outline"
@@ -257,21 +241,20 @@ export default function VariableFontPlayground() {
         </div>
       </aside>
 
-      {/* RIGHT MAIN AREA */}
       <main className="flex flex-1 flex-col">
-        <header className="flex items-center justify-between border-b border-border px-6 py-4">
+        <header className="border-border flex h-19 items-center justify-between border-b px-6 py-4">
           <div>
             <h1 className="text-lg font-semibold tracking-tight">
               Variable Font Playground
             </h1>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               Explore variable axes and generate usable CSS.
             </p>
           </div>
           <ModeToggle />
         </header>
 
-        <div className="border-b border-border px-6 py-2 text-xs text-muted-foreground flex items-center justify-between gap-2">
+        <div className="border-border text-muted-foreground flex items-center justify-between gap-2 border-b px-6 py-2 text-xs">
           <div className="truncate">
             {fontFamily ? (
               <>
@@ -287,11 +270,11 @@ export default function VariableFontPlayground() {
           </div>
         </div>
 
-        <section className="flex-1 bg-muted/30">
+        <section className="bg-muted/30 flex-1">
           <div className="mx-auto h-full w-full">
             {fontLoaded ? (
               <textarea
-                className="h-full w-full resize-none border-none text-left leading-tight outline-none p-4"
+                className="h-full w-full resize-none border-none p-4 text-left leading-tight outline-none"
                 style={{
                   fontFamily,
                   fontSize: `${fontSize}px`,
@@ -302,7 +285,7 @@ export default function VariableFontPlayground() {
                 onChange={(e) => setPreviewText(e.target.value)}
               />
             ) : (
-              <div className="flex h-full min-h-[60vh] items-center justify-center text-sm text-muted-foreground">
+              <div className="text-muted-foreground flex h-full min-h-[60vh] items-center justify-center text-sm">
                 Upload a variable font on the left to start.
               </div>
             )}
