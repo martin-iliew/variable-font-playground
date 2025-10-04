@@ -17,6 +17,14 @@ export interface FontMetadata {
   axes: VariableAxis[];
   fileSize: number;
 }
+const SAMPLE_TEXTS = {
+  title: "ABCDEFGHIJKLMN\nOPQRSTUVWXYZ\n0123456789",
+  pangram: "The quick brown fox jumps over the lazy dog 0123456789",
+  paragraph:
+    "Almost before we knew it, we had left the ground. The quick brown fox jumps over the lazy dog.",
+  wikipedia:
+    "Variable fonts are an evolution of the OpenType font specification that allow a single font file to behave like multiple fonts.",
+} as const;
 
 export function useVariableFontPlayground() {
   const [fontFile, setFontFile] = useState<File | null>(null);
@@ -26,7 +34,7 @@ export function useVariableFontPlayground() {
   const [fontSizeInput, setFontSizeInput] = useState("48");
 
   const [previewText, setPreviewText] = useState(
-    "The quick brown fox jumps over the lazy dog"
+    "The quick brown fox jumps over the lazy dog",
   );
 
   const [axes, setAxes] = useState<VariableAxis[]>([]);
@@ -101,6 +109,36 @@ export function useVariableFontPlayground() {
       setFontSize(48);
     }
   };
+  const handlePresetClick = (key: keyof typeof SAMPLE_TEXTS) => {
+    setPreviewText(SAMPLE_TEXTS[key]);
+  };
+
+  const handleCopyCss = () => {
+    if (!fontFamily) return;
+
+    const css = [
+      `font-family: "${fontFamily}";`,
+      `font-size: ${fontSize}px;`,
+      fontVariationSettings &&
+        `font-variation-settings: ${fontVariationSettings};`,
+    ]
+      .filter(Boolean)
+      .join("\n");
+
+    void navigator.clipboard.writeText(css);
+  };
+  const resetAllAxes = () => {
+    const newAxisValues: Record<string, number> = {};
+    const newAxisInputs: Record<string, string> = {};
+
+    axes.forEach((axis) => {
+      newAxisValues[axis.tag] = axis.default;
+      newAxisInputs[axis.tag] = String(axis.default);
+    });
+
+    setAxisValues(newAxisValues);
+    setAxisInputs(newAxisInputs);
+  };
 
   const fontVariationSettings = Object.entries(axisValues)
     .map(([tag, value]) => `"${tag}" ${value}`)
@@ -130,6 +168,9 @@ export function useVariableFontPlayground() {
     handleAxisInputBlur,
     handleFontSizeInputChange,
     handleFontSizeInputBlur,
+    resetAllAxes,
+    handlePresetClick,
+    handleCopyCss,
 
     fontVariationSettings,
   };

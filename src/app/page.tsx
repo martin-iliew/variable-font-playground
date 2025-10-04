@@ -8,21 +8,13 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { ModeToggle } from "@/components/ui/mode-toggle";
 import { FontDetailsDropdown } from "@/components/FontDetailsDropdown";
-
+import { toast } from "sonner";
 import { FontUploadDialog } from "@/components/FontUploadDialog";
 import { useVariableFontPlayground } from "@/hooks/useFontPlaygroundController";
-import { Upload } from "lucide-react";
+import { ChevronDown, Upload } from "lucide-react";
+import { FontDropzone } from "@/components/FontDropzone";
 
-const SAMPLE_TEXTS = {
-  title: "ABCDEFGHIJKLMN\nOPQRSTUVWXYZ\n0123456789",
-  pangram: "The quick brown fox jumps over the lazy dog 0123456789",
-  paragraph:
-    "Almost before we knew it, we had left the ground. The quick brown fox jumps over the lazy dog.",
-  wikipedia:
-    "Variable fonts are an evolution of the OpenType font specification that allow a single font file to behave like multiple fonts.",
-} as const;
-
-export default function VariableFontPlayground() {
+export default function Page() {
   const {
     fontLoaded,
     fontFamily,
@@ -46,54 +38,41 @@ export default function VariableFontPlayground() {
     handleAxisInputBlur,
     handleFontSizeInputChange,
     handleFontSizeInputBlur,
+    resetAllAxes,
+    handlePresetClick,
+    handleCopyCss,
 
     fontVariationSettings,
   } = useVariableFontPlayground();
 
-  const handlePresetClick = (key: keyof typeof SAMPLE_TEXTS) => {
-    setPreviewText(SAMPLE_TEXTS[key]);
-  };
-
-  const handleCopyCss = React.useCallback(() => {
-    if (!fontFamily) return;
-
-    const css = [
-      `font-family: "${fontFamily}";`,
-      `font-size: ${fontSize}px;`,
-      fontVariationSettings &&
-        `font-variation-settings: ${fontVariationSettings};`,
-    ]
-      .filter(Boolean)
-      .join("\n");
-
-    void navigator.clipboard?.writeText(css);
-  }, [fontFamily, fontSize, fontVariationSettings]);
-
   return (
     <div className="bg-background flex min-h-screen flex-col md:flex-row">
-      <aside className="border-border bg-card/60 border-b backdrop-blur md:w-[320px] md:border-r md:border-b-0">
+      <aside className="border-border bg-card border-b backdrop-blur md:w-[320px] md:border-r md:border-b-0">
         <div className="flex h-full flex-col">
           <div className="border-border h-19 border-b px-4 py-4">
             <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
+              <div className="flex gap-2">
+                <div>
+                  <p className="mt-1 truncate text-sm font-bold">
+                    {metadata?.name ?? "No font loaded"}
+                  </p>
+                  <p className="text-muted-foreground text-xs">
+                    {metadata?.version ?? "No font loaded"}
+                  </p>
+                </div>
                 <FontDetailsDropdown
                   trigger={
-                    <button
-                      type="button"
-                      className="block w-full text-left text-sm font-bold hover:opacity-80"
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setShowUploadModal(true)}
                     >
-                      {metadata?.name ?? "No font loaded"}
-                    </button>
+                      <ChevronDown className="text-muted-foreground" />
+                    </Button>
                   }
                   metadata={metadata}
                   fileName={metadata?.name ?? null}
                 />
-
-                {metadata?.version && (
-                  <p className="text-muted-foreground text-xs">
-                    {metadata.version}
-                  </p>
-                )}
               </div>
 
               <Button
@@ -184,7 +163,12 @@ export default function VariableFontPlayground() {
               <Label className="text-muted-foreground text-sm font-medium">
                 Variable axes
               </Label>
-              <Button variant="outline" size="sm" className="shrink-0">
+              <Button
+                variant="outline"
+                size="sm"
+                className="shrink-0"
+                onClick={resetAllAxes}
+              >
                 Reset
               </Button>
             </div>
@@ -233,7 +217,15 @@ export default function VariableFontPlayground() {
               size="sm"
               variant="outline"
               className="h-8 flex-1 rounded-[10px] text-xs"
-              onClick={handleCopyCss}
+              onClick={() => {
+                toast("CSS copied", {
+                  action: {
+                    label: "Undo",
+                    onClick: () => console.log("Undo"),
+                  },
+                });
+                handleCopyCss();
+              }}
             >
               Copy CSS
             </Button>
@@ -242,39 +234,41 @@ export default function VariableFontPlayground() {
       </aside>
 
       <main className="flex flex-1 flex-col">
-        <header className="border-border flex h-19 items-center justify-between border-b px-6 py-4">
-          <div>
-            <h1 className="text-lg font-semibold tracking-tight">
-              Variable Font Playground
-            </h1>
-            <p className="text-muted-foreground text-xs">
-              Explore variable axes and generate usable CSS.
-            </p>
-          </div>
-          <ModeToggle />
-        </header>
+        <div className="bg-card">
+          <header className="border-border flex h-19 items-center justify-between border-b px-6 py-4">
+            <div>
+              <h1 className="title text-lg font-semibold tracking-tight">
+                Variable Font Playground
+              </h1>
+              <p className="text-muted-foreground text-xs">
+                Explore variable axes and generate usable CSS.
+              </p>
+            </div>
+            <ModeToggle />
+          </header>
 
-        <div className="border-border text-muted-foreground flex items-center justify-between gap-2 border-b px-6 py-2 text-xs">
-          <div className="truncate">
-            {fontFamily ? (
-              <>
-                <span className="font-medium">{fontFamily}</span>
-                {metadata?.designer && ` · ${metadata.designer}`}
-                {metadata?.axes?.length
-                  ? ` · ${metadata.axes.length} axes`
-                  : null}
-              </>
-            ) : (
-              <span>No font loaded</span>
-            )}
+          <div className="border-border text-muted-foreground flex items-center justify-between gap-2 border-b px-6 py-2 text-xs">
+            <div className="truncate">
+              {fontFamily ? (
+                <>
+                  <span className="font-medium">{fontFamily}</span>
+                  {metadata?.designer && ` · ${metadata.designer}`}
+                  {metadata?.axes?.length
+                    ? ` · ${metadata.axes.length} axes`
+                    : null}
+                </>
+              ) : (
+                <span>No font loaded</span>
+              )}
+            </div>
           </div>
         </div>
 
-        <section className="bg-muted/30 flex-1">
-          <div className="mx-auto h-full w-full">
+        <section className="flex-1">
+          <div className="bg-muted dark:bg-secondary/30 mx-auto h-full w-full">
             {fontLoaded ? (
               <textarea
-                className="h-full w-full resize-none border-none p-4 text-left leading-tight outline-none"
+                className="h-full w-full resize-none border-none p-6 text-left leading-tight outline-none dark:bg-transparent"
                 style={{
                   fontFamily,
                   fontSize: `${fontSize}px`,
@@ -285,9 +279,11 @@ export default function VariableFontPlayground() {
                 onChange={(e) => setPreviewText(e.target.value)}
               />
             ) : (
-              <div className="text-muted-foreground flex h-full min-h-[60vh] items-center justify-center text-sm">
-                Upload a variable font on the left to start.
-              </div>
+              <FontDropzone
+                onFontLoaded={handleFontLoaded}
+                className="h-full"
+                height="100%"
+              />
             )}
           </div>
         </section>

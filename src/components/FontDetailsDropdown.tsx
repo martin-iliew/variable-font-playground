@@ -40,9 +40,9 @@ export function FontDetailsDropdown({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>{trigger}</DropdownMenuTrigger>
 
-      <DropdownMenuContent className="border-border/80 bg-card w-80 rounded-[14px] border px-3 py-2.5">
+      <DropdownMenuContent className="border-border/80 bg-card w-80 rounded-[14px] border px-3 py-2.5  ">
         <DropdownMenuLabel className="px-1 pt-0 pb-1 text-sm font-semibold">
-          {metadata?.name ?? "No font loaded"}
+          Font Info
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
 
